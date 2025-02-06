@@ -1,0 +1,26 @@
+.navContainer {
+  min-width: 90vw;
+  
+}
+.navBar{
+    z-index:100;
+}
+.navIcon{
+    width: 90%;
+    height 90%;
+}
+.iconContainer{
+  width : 10%
+}
+.navItemContainer{
+  padding-top: 0.5rem;
+  width: 55%;
+  display: flex;
+  align-items:center
+}
+.searchContainer{
+  
+  width: 35%;
+  display: flex;
+  align-items:center
+}
