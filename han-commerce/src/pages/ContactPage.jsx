@@ -1,27 +1,37 @@
-import { useState } from "react";
+import { useRef } from "react";
+import { useForm } from "react-hook-form";
 import { FaEnvelope, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import emailjs from "@emailjs/browser";
 
 const ContactPage = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
+  const formRef = useRef();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log("Form submitted:", formData);
-    // Reset form after submission
-    setFormData({ name: "", email: "", message: "" });
+  const onSubmit = (data) => {
+    console.log("Form submitted:", data);
+
+    emailjs
+      .sendForm(
+        "service_kow2nt9",
+        "template_cb400bp",
+        formRef.current,
+        "taWHxGleX6BjcDvid"
+      )
+      .then(
+        (result) => {
+          console.log(result.text);
+          reset(); // Reset the form after successful submission
+        },
+        (error) => {
+          console.log(error.text);
+        }
+      );
   };
 
   return (
@@ -40,7 +50,11 @@ const ContactPage = () => {
         <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2">
           {/* Contact Form */}
           <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form
+              ref={formRef}
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
               <div>
                 <label
                   htmlFor="name"
@@ -51,12 +65,14 @@ const ContactPage = () => {
                 <input
                   type="text"
                   id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="mt-1 block w-full border-gray-700 rounded-md shadow-sm bg-gray-800 text-white focus:ring-red-500 focus:border-red-500"
+                  {...register("name", { required: "Name is required" })}
+                  className="mt-1 block w-full p-2 border-gray-700 rounded-md shadow-sm bg-gray-800 text-white focus:ring-red-500 focus:border-red-500"
                 />
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
               <div>
                 <label
@@ -68,12 +84,20 @@ const ContactPage = () => {
                 <input
                   type="email"
                   id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="mt-1 block w-full border-gray-700 rounded-md shadow-sm bg-gray-800 text-white focus:ring-red-500 focus:border-red-500"
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address",
+                    },
+                  })}
+                  className="mt-1 p-2 block w-full border-gray-700 rounded-md shadow-sm bg-gray-800 text-white focus:ring-red-500 focus:border-red-500"
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
               <div>
                 <label
@@ -84,13 +108,15 @@ const ContactPage = () => {
                 </label>
                 <textarea
                   id="message"
-                  name="message"
                   rows={4}
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
+                  {...register("message", { required: "Message is required" })}
                   className="mt-1 block w-full border-gray-700 rounded-md shadow-sm bg-gray-800 text-white focus:ring-red-500 focus:border-red-500"
                 ></textarea>
+                {errors.message && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.message.message}
+                  </p>
+                )}
               </div>
               <div>
                 <button

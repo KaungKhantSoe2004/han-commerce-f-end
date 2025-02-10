@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BlogCard from "../devComponenets/blogCard";
+import axios from "axios";
 // Assuming you already have a BlogCard component
 
 const blogPosts = [
@@ -83,17 +84,22 @@ export default function BlogPage() {
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = blogPosts.slice(indexOfFirstPost, indexOfLastPost);
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:8000/api/getBlogs");
 
+      console.log(response.data);
+
+      // setVipName(response.data.data.memberLevelName);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
   return (
     <div>
-      {/* Hero Section */}
-      {/* <section className="bg-black py-16 text-start text-white">
-        <h1 className="text-4xl font-extrabold">Our Blog</h1>
-        <p className="mt-2 text-lg text-gray-400">
-          Stay updated with the latest articles
-        </p>
-      </section> */}
-      {/* Blog Posts Section */}
       <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {currentPosts.map((post) => (

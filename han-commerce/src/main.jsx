@@ -13,6 +13,7 @@ import BlogPage from "./pages/blog.jsx";
 import ProfilePage from "./pages/profilePage.jsx";
 import CartPage from "./pages/cart.jsx";
 import BlogInfo from "./pages/blogInfo.jsx";
+import FavoritesPage from "./pages/favPage.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -25,6 +26,8 @@ createRoot(document.getElementById("root")).render(
         <Route path="blogs" element={<BlogPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="cart" element={<CartPage />} />
+        <Route path="favorites" element={<FavoritesPage />} />
+        <Route path="Blog/:id" element={<BlogInfo />} />
       </Route>
 
       <Route path="login" element={<Login />} />

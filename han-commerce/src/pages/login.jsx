@@ -1,18 +1,26 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BiLoaderAlt, BiCheck, BiX } from "react-icons/bi";
+import { localCall } from "../utilities/localstorage";
 
 function Login() {
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
   });
+
+  // useState Declaration
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-
+  const [requireEmail, setRequireEmail] = useState(false);
+  const [requirePassword, setRequirePassword] = useState(false);
+  const [noUser, setNoUser] = useState(false);
+  const [incorrectPassword, setIncorrectPassword] = useState(false);
+  // declaring navigate
+  const navigate = useNavigate();
+  // functions
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -21,9 +29,26 @@ function Login() {
     }));
   };
 
+  const validation = () => {
+    setIncorrectPassword(false);
+    setRequireEmail(false);
+    setRequirePassword(false);
+    setNoUser(false);
+    if (formData.email == "") {
+      setRequireEmail(true);
+    }
+    if (formData.password == "") {
+      setRequirePassword(true);
+    }
+    if (requireEmail == true || requirePassword == true) {
+      return;
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    validation();
     setIsLoading(true);
+
     setError("");
     setSuccess(false);
 
@@ -35,11 +60,24 @@ function Login() {
 
     try {
       const response = await axios.post(
-        "https://linworkout-backend.onrender.com/user",
+        "http://127.0.0.1:8000/api/userLogin",
         formData
       );
       console.log(response.data);
-      localStorage.setItem("user", JSON.stringify(response.data));
+      if (response.data.status == "true") {
+        localCall("setUser", response.data.data);
+        localCall("setToken", response.data.api_key);
+        setSuccess(true);
+      } else {
+        if (response.data.data == "Incorrect User Email") {
+          setNoUser(true);
+          return;
+        } else {
+          setIncorrectPassword(true);
+          return;
+        }
+      }
+
       setSuccess(true);
       // Redirect or update app state here
     } catch (error) {
@@ -49,7 +87,14 @@ function Login() {
       setIsLoading(false);
     }
   };
+  // useEffect
 
+  useEffect(() => {
+    const token = localStorage.getItem("han-commerce-token");
+    if (token) {
+      navigate("/");
+    }
+  }, []);
   return (
     <div className="register-container">
       <div className="register-card">
@@ -77,6 +122,14 @@ function Login() {
               placeholder="Enter your email"
               required
             />
+            {requireEmail && (
+              <small className=" block text-red-500">Email is Required.</small>
+            )}
+            {noUser && (
+              <small className=" block text-red-500">
+                The Email is not registered yet!
+              </small>
+            )}
           </div>
           <div className="form-group">
             <label htmlFor="password">Password</label>
@@ -89,10 +142,22 @@ function Login() {
               placeholder="Enter your password"
               required
             />
+            {requirePassword && (
+              <small className=" block text-red-500">
+                Password is Required!
+              </small>
+            )}
+            {incorrectPassword && (
+              <small className=" block text-red-500">
+                Your password is incorrect
+              </small>
+            )}
           </div>
           <button
             type="submit"
-            className="register-button"
+            className={`register-button flex justify-center  disabled:bg-red-400 ${
+              success ? "bg-violet-900" : "bg-red-600"
+            }`}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -100,7 +165,7 @@ function Login() {
             ) : success ? (
               <BiCheck className="icon-success" />
             ) : (
-              "Register"
+              "Log In"
             )}
           </button>
         </form>
@@ -111,7 +176,7 @@ function Login() {
         )}
         {success && (
           <p className="success-message">
-            <BiCheck className="icon-success" /> Registration successful!
+            <BiCheck className="icon-success" /> Login successful!
           </p>
         )}
         <div className="register-footer">
@@ -191,7 +256,7 @@ function Login() {
         }
 
         .register-button {
-          background-color: #dc3545;
+
           color: #d1d1d1;
           padding: 0.75rem;
           border: none;
@@ -201,14 +266,7 @@ function Login() {
           transition: background-color 0.3s;
         }
 
-        .register-button:hover {
-          background-color: #e63946;
-        }
-
-        .register-button:disabled {
-          background-color: #ccc;
-          cursor: not-allowed;
-        }
+  
 
         .error-message {
           color: #d32f2f;

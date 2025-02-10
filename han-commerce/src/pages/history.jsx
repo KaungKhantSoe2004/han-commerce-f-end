@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   FaDownload,
   FaCheckCircle,
@@ -6,6 +7,7 @@ import {
   FaMapMarkerAlt,
   FaTimes,
 } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const purchases = [
   {
@@ -51,10 +53,19 @@ const purchases = [
 ];
 
 export default function PurchaseHistory() {
+  // declaring navigate
+  const navigate = useNavigate();
   const handleCancel = (id) => {
     console.log(`Cancelling order ${id}`);
   };
 
+  // useEffect
+  useEffect(() => {
+    const token = localStorage.getItem("han-commerce-token");
+    if (!token) {
+      navigate("/");
+    }
+  }, []);
   return (
     <div className="container mx-auto px-4 sm:px-8 py-8">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6">

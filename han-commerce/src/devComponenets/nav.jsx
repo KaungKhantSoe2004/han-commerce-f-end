@@ -4,7 +4,7 @@ const NavBar = () => {
   return (
     <div className=" navBar top-0 flex justify-center sticky bg-gradient-to-b   from-gray-950 to-black/75  z-50 ">
       <div className=" hidden navContainer  p-3  md:flex">
-        <div className=" flex   iconContainer">
+        <div className=" flex  bg-amber-800  iconContainer">
           <img src="../imgs/bohan.png" className=" navIcon" alt="" />
         </div>
         <div className=" navItemContainer ">

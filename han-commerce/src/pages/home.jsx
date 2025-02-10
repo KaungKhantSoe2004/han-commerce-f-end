@@ -20,8 +20,13 @@ const HomePage = () => {
   const carouselRef = useRef(null);
   const indexRef = useRef(0);
   const [_, setCurrentIndex] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("han-commerce-token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
     const interval = setInterval(() => {
       indexRef.current = (indexRef.current + 1) % sections.length;
       setCurrentIndex(indexRef.current);

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BiLoaderAlt, BiCheck, BiX } from "react-icons/bi";
 
@@ -8,10 +8,56 @@ function Register() {
     name: "",
     email: "",
     password: "",
+    IP: "",
   });
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  // validation
+  const [shortPasswordValidation, setShortPasswordValidation] = useState(false);
+  const [passwordCharactersValidation, setPasswordCharactersValidation] =
+    useState(false);
+  const [requireName, setRequireName] = useState(false);
+  const [requireEmail, setRequireEmail] = useState(false);
+  const [existedUsermail, setExistedUsermail] = useState(false);
+  const [existedUsername, setExistedUsername] = useState(false);
+  // useEffect
+  useEffect(() => {
+    const token = localStorage.getItem("han-commerce-token");
+    if (token) {
+      navigate("/");
+    }
+
+    async function getIPAddress() {
+      try {
+        // Step 1: Fetch the user's public IP address using ipify API
+        const ipResponse = await axios.get("http://api.ipify.org?format=json");
+        const ip = ipResponse.data.ip;
+
+        // Step 2: Fetch the geolocation info using ipapi (or ipstack)
+        const locationResponse = await axios.get(`http://ipapi.co/${ip}/json/`);
+        const locationData = locationResponse.data;
+
+        // Set formData with IP and location
+        console.log(
+          `${ip} : ${locationData.city}, ${locationData.country_name}`
+        );
+        setFormData((prevState) => ({
+          ...prevState,
+          IP: `${ip} : ${locationData.city}, ${locationData.country_name}`,
+        }));
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching IP or location:", error);
+        setError("Failed to fetch IP or location.");
+        setIsLoading(false);
+      }
+    }
+
+    getIPAddress();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -21,9 +67,46 @@ function Register() {
     }));
   };
 
+  const validatePassword = (password) => {
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return true;
+    }
+    return false; // No error
+  };
+
+  const validation = () => {
+    setRequireEmail(false);
+    setRequireName(false);
+    setShortPasswordValidation(false);
+    setPasswordCharactersValidation(false);
+    setExistedUsermail(false);
+    setExistedUsername(false);
+    if (formData.name == "") {
+      setRequireName(true);
+    }
+    if (formData.email == "") {
+      setRequireEmail(true);
+    }
+    if (formData.password.length < 8) {
+      setShortPasswordValidation(true);
+    }
+    setPasswordCharactersValidation(validatePassword(formData.password));
+    if (
+      requireEmail ||
+      requireName ||
+      shortPasswordValidation ||
+      passwordCharactersValidation ||
+      existedUsermail ||
+      existedUsername
+    ) {
+      return;
+    }
+  };
   const handleSubmit = async (e) => {
-    e.preventDefault();
     setIsLoading(true);
+    e.preventDefault();
+
+    validation();
     setError("");
     setSuccess(false);
 
@@ -32,16 +115,20 @@ function Register() {
       setIsLoading(false);
       return;
     }
-
+    console.log("ok pr");
     try {
       const response = await axios.post(
-        "https://linworkout-backend.onrender.com/user",
+        "http://127.0.0.1:8000/api/userRegister",
         formData
       );
-      console.log(response.data);
-      localStorage.setItem("user", JSON.stringify(response.data));
+      console.log(response.data.data);
+      if (response.data.data == "existedUser") {
+        setExistedUsername(true);
+        return;
+      }
+
       setSuccess(true);
-      // Redirect or update app state here
+      navigate("/login");
     } catch (error) {
       console.error(error);
       setError("Registration failed. Please try again later.");
@@ -77,6 +164,19 @@ function Register() {
               placeholder="Enter your Name"
               required
             />
+            <div>
+              {requireName && (
+                <small className=" block text-red-500">
+                  User name is Required!
+                </small>
+              )}
+
+              {existedUsername && (
+                <small className=" block text-red-500">
+                  User Name already exists!
+                </small>
+              )}
+            </div>
           </div>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -90,6 +190,19 @@ function Register() {
               placeholder="Enter your email"
               required
             />
+            <div>
+              {requireEmail && (
+                <small className=" block text-red-500">
+                  User email is Required!
+                </small>
+              )}
+
+              {existedUsermail && (
+                <small className=" block text-red-500">
+                  User email already exists!
+                </small>
+              )}
+            </div>
           </div>
           <div className="form-group">
             <label htmlFor="password">Password</label>
@@ -102,10 +215,22 @@ function Register() {
               placeholder="Enter your password"
               required
             />
+            {passwordCharactersValidation && (
+              <small className=" block text-red-500">
+                Your password must contain both characters and numbers
+              </small>
+            )}
+            {shortPasswordValidation && (
+              <small className=" block text-red-500">
+                Your password must contain atleast 8 characters
+              </small>
+            )}
           </div>
           <button
             type="submit"
-            className="register-button"
+            className={`register-button flex justify-center  disabled:bg-red-400 ${
+              success ? "bg-violet-900" : "bg-red-600"
+            }`}
             disabled={isLoading}
           >
             {isLoading ? (
@@ -204,7 +329,7 @@ function Register() {
         }
 
         .register-button {
-          background-color: #dc3545;
+      
           color: #d1d1d1;
           padding: 0.75rem;
           border: none;
@@ -214,14 +339,8 @@ function Register() {
           transition: background-color 0.3s;
         }
 
-        .register-button:hover {
-          background-color: #e63946;
-        }
-
-        .register-button:disabled {
-          background-color: #ccc;
-          cursor: not-allowed;
-        }
+  
+   
 
         .error-message {
           color: #d32f2f;

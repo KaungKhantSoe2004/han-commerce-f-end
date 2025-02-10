@@ -1,26 +1,29 @@
 .navContainer {
   min-width: 90vw;
-  
 }
-.navBar{
-    z-index:100;
+.navBar {
+  z-index: 100;
 }
-.navIcon{
-    width: 90%;
-    height 90%;
+.navIcon {
+  width: 90%;
+  height: 90%;
 }
-.iconContainer{
-  width : 10%
+.iconContainer {
+  width: 10%;
 }
-.navItemContainer{
+.navItemContainer {
   padding-top: 0.5rem;
   width: 55%;
   display: flex;
-  align-items:center
+  align-items: center;
 }
-.searchContainer{
-  
+.searchContainer {
   width: 35%;
   display: flex;
-  align-items:center
+  align-items: center;
+}
+@media (max-width: 650px) {
+  .iconContainer {
+    width: 30%;
+  }
 }

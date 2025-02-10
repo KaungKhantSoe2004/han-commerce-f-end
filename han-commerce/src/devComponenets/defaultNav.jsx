@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaShoppingCart as ShoppingCart,
   FaHeart as Heart,
   FaUser as User,
   FaMarker as X,
+  FaSignOutAlt as Logout,
 } from "react-icons/fa";
 import { BiSearch as Search, BiMenu as Menu } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
+
 const DefaultNavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoogedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = (e) => {
@@ -19,6 +22,14 @@ const DefaultNavBar = () => {
     // Implement your search logic here
     console.log("Searching for:", searchQuery);
   };
+
+  // useEffect
+  useEffect(() => {
+    const token = localStorage.getItem("han-commerce-token");
+    if (token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   return (
     <nav className="sticky top-0  md:py-2 py-0  bg-gradient-to-b   from-gray-900 to-black/80  z-50 text-white">
@@ -85,32 +96,50 @@ const DefaultNavBar = () => {
           </div>
 
           {/* Right side icons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <div
-              onClick={() => {
-                navigate("favorites");
-              }}
-              className="cursor-pointer hover:bg-red-700 p-2 rounded-full"
-            >
-              <Heart className="h-6 w-6" />
+          {isLoogedIn ? (
+            <div className="hidden md:flex items-center space-x-4">
+              <div
+                onClick={() => {
+                  navigate("favorites");
+                }}
+                className="cursor-pointer hover:bg-red-700 p-2 rounded-full"
+              >
+                <Heart className="h-6 w-6" />
+              </div>
+              <div
+                onClick={() => {
+                  navigate("profile");
+                }}
+                className=" cursor-pointer hover:bg-red-700 p-2 rounded-full"
+              >
+                <User className="h-6 w-6" />
+              </div>
+              <div
+                onClick={() => {
+                  navigate("cart");
+                }}
+                className=" cursor-pointer hover:bg-red-700 p-2 rounded-full"
+              >
+                <ShoppingCart className="h-6 w-6" />
+              </div>
+              <div
+                onClick={() => navigate("login")}
+                className="cursor-pointer hover:bg-red-700 p-2 rounded-lg bg-gray-700 flex items-center space-x-2"
+              >
+                <Logout className="h-4 w-4 text-white" />
+                <span className=" text-sm text-white">Logout</span>
+              </div>
             </div>
-            <div
-              onClick={() => {
-                navigate("profile");
-              }}
-              className=" cursor-pointer hover:bg-red-700 p-2 rounded-full"
-            >
-              <User className="h-6 w-6" />
+          ) : (
+            <div className="hidden ml-2 md:flex items-center justify-center space-x-4">
+              <div
+                onClick={() => navigate("login")}
+                className="cursor-pointer hover:bg-red-700 p-2 rounded-lg bg-gray-700 flex items-center space-x-2"
+              >
+                <span className=" text-sm text-white">Signup</span>
+              </div>
             </div>
-            <div
-              onClick={() => {
-                navigate("cart");
-              }}
-              className=" cursor-pointer hover:bg-red-700 p-2 rounded-full"
-            >
-              <ShoppingCart className="h-6 w-6" />
-            </div>
-          </div>
+          )}
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
