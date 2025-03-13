@@ -14,5 +14,6 @@ export const localCall = (type, value) => {
 };
 export const globalLogout = (navigate) => {
   localStorage.removeItem(`${domainName}-token`); // or sessionStorage.removeItem('authToken');
+  localStorage.removeItem(`${domainName}-user`);
   navigate("/login");
 };

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-const TopImgSection = () => {
+const FifthImgSection = () => {
   const textVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -21,44 +21,46 @@ const TopImgSection = () => {
           transition={{ duration: 5, ease: "easeOut" }}
         >
           <img
-            src="../imgs/jean.jpg"
+            src="../imgs/gymAccessories.jpg"
             className="w-full h-full object-cover"
-            alt="Top Banner"
+            alt="Gym Accessories Banner"
+            style={{ width: "100%", height: "100%" }} // Ensure image covers the container
           />
         </motion.div>
 
         {/* Text Overlay */}
-        <motion.div
-          className="absolute inset-0 flex items-center justify-start px-4 sm:px-6 md:px-12 lg:px-16 text-white z-10"
-          initial="hidden"
-          animate="visible"
-          variants={textVariants}
-        >
-          <div className="space-y-2 sm:space-y-4 md:space-y-6">
+        <div className="absolute inset-0 flex justify-start items-center px-4 sm:px-6 md:px-12 lg:px-16 text-white z-10">
+          {/* Text Content */}
+          <motion.div
+            className="text-left space-y-0 sm:space-y-4 md:space-y-6"
+            initial="hidden"
+            animate="visible"
+            variants={textVariants}
+          >
             <motion.h1
-              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight"
+              className="text-xl sm:text-xl md:text-3xl lg:text-5xl font-extrabold tracking-tight"
               variants={textVariants}
             >
-              BUILD PERFECT FIGURE
+              LIVE PASSION
             </motion.h1>
             <motion.h2
-              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl italic font-bold flex items-center"
+              className="text-xl sm:text-xl md:text-2xl lg:text-4xl italic font-bold flex items-center"
               variants={textVariants}
             >
-              <span className="text-white mr-2">___</span> SHAPE FOR GOOD
+              <span className="text-white mr-2">___</span>CHASE DREAMS
             </motion.h2>
             <motion.h3
               className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-200"
               variants={textVariants}
             >
-              AND HEALTHY LIFE
+              BE UNSTOPPABLE
             </motion.h3>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
 
       {/* Inline CSS for Mobile Responsiveness */}
-      <style jsx>{`
+      <style>{`
         @media (max-width: 640px) {
           h1 {
             font-size: 1.5rem; /* 24px */
@@ -75,4 +77,4 @@ const TopImgSection = () => {
   );
 };
 
-export default TopImgSection;
+export default FifthImgSection;

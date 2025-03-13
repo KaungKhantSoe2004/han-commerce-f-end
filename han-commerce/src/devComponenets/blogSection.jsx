@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react";
 import BlogCard from "./blogCard";
+import { localCall } from "../utilities/localstorage";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const blogPosts = [
   {
@@ -36,6 +40,51 @@ const blogPosts = [
 ];
 
 const BlogSection = () => {
+  const backendDomainName = "http://127.0.0.1:8000/";
+  const token = localStorage.getItem("han-commerce-token");
+  const navigate = useNavigate();
+  const [myBlogs, setMyBlogs] = useState(blogPosts);
+  const userData = JSON.parse(localStorage.getItem("han-commerce-user"));
+  // useEffect
+  const fetchData = async () => {
+    // const userData = JSON.parse(localStorage.getItem("han-commerce-user"));
+    if (!token) {
+      navigate("/");
+    }
+    try {
+      const response = await axios.post(
+        `${backendDomainName}api/getBlogs`,
+        {
+          id: userData.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+     
+      if (response.data.status == "false") {
+        
+        return;
+      } else {
+        
+        setMyBlogs(response.data.categories);
+      }
+    } catch (error) {
+  
+      if (error.message == "Request failed with status code 401") {
+        localCall("removeToken");
+        localCall("removeUser");
+        navigate("/login");
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
   return (
     <section className="bg-black py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -43,7 +92,7 @@ const BlogSection = () => {
           Latest from Our Blog
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blogPosts.map((post) => (
+          {myBlogs.map((post) => (
             <BlogCard key={post.id} {...post} />
           ))}
         </div>

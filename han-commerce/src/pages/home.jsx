@@ -1,68 +1,63 @@
-import { useRef, useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import NavBar from "../devComponenets/nav";
 import TopImgSection from "../devComponenets/topImg";
-import MyHome from "./ex";
-import "../styles/home.css"; // Ensure this file exists for styling
 import SecondImgSection from "../devComponenets/secondImg";
 import ThirdImgSection from "../devComponenets/thirdImg";
-import DefaultNavBar from "../devComponenets/defaultNav";
+import FourthImgSection from "../devComponenets/fourthImg";
+import FifthImgSection from "../devComponenets/fifthImg";
+import MyHome from "./ex";
 
 const HomePage = () => {
   const sections = [
     { id: 1, component: <TopImgSection /> },
     { id: 2, component: <SecondImgSection /> },
     { id: 3, component: <ThirdImgSection /> },
-    { id: 4, component: <TopImgSection /> },
-    { id: 5, component: <TopImgSection /> },
+    { id: 4, component: <FourthImgSection /> },
+    { id: 5, component: <FifthImgSection /> },
   ];
 
-  const carouselRef = useRef(null);
-  const indexRef = useRef(0);
-  const [_, setCurrentIndex] = useState(0);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const token = localStorage.getItem("han-commerce-token");
-    if (token) {
-      setIsLoggedIn(true);
-    }
     const interval = setInterval(() => {
-      indexRef.current = (indexRef.current + 1) % sections.length;
-      setCurrentIndex(indexRef.current);
-      carouselRef.current?.scrollTo({
-        left: indexRef.current * window.innerWidth,
-        behavior: "smooth",
-      });
-    }, 3000);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % sections.length);
+    }, 4000); // 4 seconds per section
 
     return () => clearInterval(interval);
-  }, []);
+  }, [sections.length]);
 
   return (
-    <div className="homePage">
-      {/* <DefaultNavBar /> */}
-      <br />
-
-      <div className="relative overflow-hidden">
-        <motion.div
-          ref={carouselRef}
-          className="flex space-x-4 scroll-container"
-          drag="x"
-          dragConstraints={{
-            right: 0,
-            left: -window.innerWidth * (sections.length - 1),
-          }}
-        >
-          {sections.map((section) => (
-            <motion.div key={section.id} className="min-w-full">
-              {section.component}
-            </motion.div>
-          ))}
-        </motion.div>
+    <>
+      <div className=" bg-black text-white overflow-x-hidden relative">
+        <div className="relative  h-[300px] sm:h-[100%] overflow-hidden">
+          <motion.div
+            className="flex"
+            animate={{
+              x: `-${currentIndex * 100}vw`, // Move by 100% viewport width per section
+            }}
+            transition={{ duration: 0.8, ease: "easeInOut" }} // Smooth transition
+            style={{
+              width: `${sections.length * 100}vw`, // Total width for all sections
+            }}
+          >
+            {sections.map((section) => (
+              <motion.div
+                key={section.id}
+                className="min-w-[100vw] h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)]"
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                {section.component}
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+        <MyHome />
       </div>
-      <MyHome />
-    </div>
+    </>
   );
 };
 

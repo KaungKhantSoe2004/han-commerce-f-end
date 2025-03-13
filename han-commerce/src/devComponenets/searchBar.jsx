@@ -15,7 +15,7 @@ export default function SearchBar() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Implement your search logic here
-    console.log("Searching for:", inputRef.current?.value);
+
     // Redirect to search page or perform search
     // window.location.href = `/search?q=${inputRef.current?.value}`;
   };

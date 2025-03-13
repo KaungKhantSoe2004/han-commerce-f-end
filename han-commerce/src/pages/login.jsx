@@ -63,11 +63,12 @@ function Login() {
         "http://127.0.0.1:8000/api/userLogin",
         formData
       );
-      console.log(response.data);
+
       if (response.data.status == "true") {
         localCall("setUser", response.data.data);
         localCall("setToken", response.data.api_key);
         setSuccess(true);
+        navigate("/");
       } else {
         if (response.data.data == "Incorrect User Email") {
           setNoUser(true);

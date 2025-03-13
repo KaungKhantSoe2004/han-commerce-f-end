@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FaEnvelope, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaSpinner } from "react-icons/fa";
 import emailjs from "@emailjs/browser";
+import { BiLoaderAlt } from "react-icons/bi";
 
 const ContactPage = () => {
   const {
@@ -10,12 +11,11 @@ const ContactPage = () => {
     reset,
     formState: { errors },
   } = useForm();
-
+  const [isSending, setIsSending] = useState(false);
   const formRef = useRef();
 
   const onSubmit = (data) => {
-    console.log("Form submitted:", data);
-
+    setIsSending(true);
     emailjs
       .sendForm(
         "service_kow2nt9",
@@ -26,6 +26,8 @@ const ContactPage = () => {
       .then(
         (result) => {
           console.log(result.text);
+          setIsSending(false);
+          alert("Message Posted Successfully!");
           reset(); // Reset the form after successful submission
         },
         (error) => {
@@ -119,12 +121,22 @@ const ContactPage = () => {
                 )}
               </div>
               <div>
-                <button
-                  type="submit"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300"
-                >
-                  Send Message
-                </button>
+                {isSending ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300"
+                  >
+                    <BiLoaderAlt className="icon-spin" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300"
+                  >
+                    Send Message
+                  </button>
+                )}
               </div>
             </form>
           </div>

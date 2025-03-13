@@ -1,78 +1,48 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FiHeart, FiStar, FiShoppingCart, FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { localCall } from "../utilities/localstorage";
 import axios from "axios";
+import ProductModal from "../devComponenets/productModal";
 
 export default function FavoritesPage() {
   // delcaring Navigate
+  const userData = localStorage.getItem("han-commerce-user");
   const navigate = useNavigate();
+  const token = localStorage.getItem("han-commerce-token");
+  const backendDomainName = "http://127.0.0.1:8000/";
+  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const removeFav = async (id) => {
+    console.log(id);
+    try {
+      const response = await axios.post(
+        `${backendDomainName}api/removeMyFav/`,
+        {
+          id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-  // This would typically come from your favorites state management
-  const favoriteProducts = [
-    {
-      id: "1",
-      name: "Premium Sports Shoe",
-      category: "Footwear",
-      price: 129.99,
-      rating: 4.5,
-      reviews: 128,
-      colors: ["bg-red-500", "bg-black", "bg-white"],
-      image: "../imgs/blogThree.png",
-    },
-    {
-      id: "2",
-      name: "Premium Sports Shoe",
-      category: "Footwear",
-      price: 129.99,
-      rating: 4.5,
-      reviews: 128,
-      colors: ["bg-red-500", "bg-black", "bg-white"],
-      image: "../imgs/blogThree.png",
-    },
-    {
-      id: "3",
-      name: "Premium Sports Shoe",
-      category: "Footwear",
-      price: 129.99,
-      rating: 4.5,
-      reviews: 128,
-      colors: ["bg-red-500", "bg-black", "bg-white"],
-      image: "../imgs/blogThree.png",
-    },
-    {
-      id: "4",
-      name: "Premium Sports Shoe",
-      category: "Footwear",
-      price: 129.99,
-      rating: 4.5,
-      reviews: 128,
-      colors: ["bg-red-500", "bg-black", "bg-white"],
-      image: "../imgs/blogThree.png",
-    },
-    {
-      id: "5",
-      name: "Premium Sports Shoe",
-      category: "Footwear",
-      price: 129.99,
-      rating: 4.5,
-      reviews: 128,
-      colors: ["bg-red-500", "bg-black", "bg-white"],
-      image: "../imgs/blogThree.png",
-    },
-    {
-      id: "6",
-      name: "Premium Sports Shoe",
-      category: "Footwear",
-      price: 129.99,
-      rating: 4.5,
-      reviews: 128,
-      colors: ["bg-red-500", "bg-black", "bg-white"],
-      image: "../imgs/blogThree.png",
-    },
-  ];
-
-  // useEffect
+      if (response.data.status == "false") {
+        console.log("error occured");
+        return;
+      } else {
+        console.log("あり　がと　ございます");
+      }
+    } catch (error) {
+      if (error.message == "Request failed with status code 401") {
+        localCall("removeToken");
+        localCall("removeUser");
+        navigate("/login");
+      }
+    }
+  };
   const fetchData = async () => {
     const token = localStorage.getItem("han-commerce-token");
     const userData = JSON.parse(localStorage.getItem("han-commerce-user"));
@@ -93,9 +63,11 @@ export default function FavoritesPage() {
         }
       );
 
-      console.log(response.data);
-
-      // setVipName(response.data.data.memberLevelName);
+      if (response.data.status == "true") {
+        setFavoriteProducts(response.data.data);
+      } else {
+        console.log("There is error");
+      }
     } catch (error) {
       console.log(error);
       if (error.message == "Request failed with status code 401") {
@@ -126,7 +98,7 @@ export default function FavoritesPage() {
       {/* Favorites Grid */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {favoriteProducts.map((product) => (
+          {favoriteProducts?.map((product) => (
             <div
               key={product.id}
               className="group cursor-pointer relative bg-neutral-900 rounded-xl overflow-hidden shadow-lg hover:shadow-red-500/10 transition-all duration-300 transform hover:-translate-y-2"
@@ -134,7 +106,11 @@ export default function FavoritesPage() {
               {/* Image Container */}
               <div className="relative aspect-square overflow-hidden">
                 <img
-                  src={product.image || "/placeholder.svg"}
+                  src={
+                    product.cover_photo
+                      ? `${backendDomainName}storage/${product.cover_photo}`
+                      : "/placeholder.svg"
+                  }
                   alt={product.name}
                   className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                 />
@@ -145,7 +121,16 @@ export default function FavoritesPage() {
                     {/* Top Section */}
                     <div className="space-y-2">
                       <div className="flex justify-end items-end">
-                        <button className="text-red-500 hover:text-white transition-colors duration-300">
+                        <button
+                          onClick={() => {
+                            removeFav(product.id);
+                            setFavoriteProducts((prevProducts) =>
+                              prevProducts.filter((p) => p.id !== product.id)
+                            );
+                            console.log(favoriteProducts);
+                          }}
+                          className="text-red-500 hover:text-white transition-colors duration-300"
+                        >
                           <FiTrash2 className="w-5 h-5" />
                         </button>
                       </div>
@@ -153,7 +138,7 @@ export default function FavoritesPage() {
                         {product.name}
                       </h3>
                       <p className="text-white/60 text-sm">
-                        {product.category}
+                        {product.category_name}
                       </p>
 
                       {/* Rating */}
@@ -170,21 +155,26 @@ export default function FavoritesPage() {
                     {/* Bottom Section */}
                     <div className="space-y-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
                       {/* Colors */}
-                      <div className="flex space-x-2">
-                        {product.colors.map((color, index) => (
-                          <div
-                            key={index}
-                            className={`w-5 h-5 rounded-full ${color} cursor-pointer border border-transparent hover:border-red-500 transition-all duration-300`}
-                          />
-                        ))}
-                      </div>
+                      {product.colors && (
+                        <div className="flex space-x-2">
+                          {JSON.parse(product.colors).map((color, index) => (
+                            <div
+                              key={index}
+                              className={`w-5 h-5 rounded-full ${color} cursor-pointer border border-transparent hover:border-red-500 transition-all duration-300`}
+                            />
+                          ))}
+                        </div>
+                      )}
 
                       {/* Price and Cart */}
                       <div className="flex items-center justify-between">
                         <span className="text-xl font-bold text-red-500">
-                          ${product.price.toFixed(2)}
+                          ${product.price}
                         </span>
-                        <button className="bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold hover:bg-red-600 transition-colors duration-300 flex items-center space-x-1">
+                        <button
+                          onClick={() => setSelectedProduct(product)}
+                          className="bg-red-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold hover:bg-red-600 transition-colors duration-300 flex items-center space-x-1"
+                        >
                           <FiShoppingCart className="w-4 h-4" />
                           <span>Add to Cart</span>
                         </button>
@@ -210,6 +200,13 @@ export default function FavoritesPage() {
           </div>
         )}
       </div>
+
+      {selectedProduct && (
+        <ProductModal
+          selectedProduct={selectedProduct}
+          setSelectedProduct={setSelectedProduct}
+        />
+      )}
     </div>
   );
 }

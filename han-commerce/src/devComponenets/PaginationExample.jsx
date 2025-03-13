@@ -8,7 +8,6 @@ const PaginationExample = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // Here you would typically fetch data for the new page
-    console.log(`Fetching data for page ${page}`);
   };
 
   return (

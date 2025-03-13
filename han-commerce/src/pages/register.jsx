@@ -84,29 +84,37 @@ function Register() {
     if (formData.name == "") {
       setRequireName(true);
     }
+
     if (formData.email == "") {
       setRequireEmail(true);
     }
     if (formData.password.length < 8) {
       setShortPasswordValidation(true);
     }
+    console.log(formData);
     setPasswordCharactersValidation(validatePassword(formData.password));
     if (
-      requireEmail ||
-      requireName ||
-      shortPasswordValidation ||
-      passwordCharactersValidation ||
+      formData.email == "" ||
+      formData.name == "" ||
+      formData.password.length < 8 ||
+      !/[a-zA-Z]/.test(formData.password) ||
+      !/[0-9]/.test(formData.password) ||
       existedUsermail ||
       existedUsername
     ) {
-      return;
+      return true;
     }
+    return false;
   };
   const handleSubmit = async (e) => {
     setIsLoading(true);
     e.preventDefault();
-
-    validation();
+    // alert(validation());
+    // return;
+    if (validation()) {
+      setIsLoading(false);
+      return;
+    }
     setError("");
     setSuccess(false);
 
@@ -115,13 +123,13 @@ function Register() {
       setIsLoading(false);
       return;
     }
-    console.log("ok pr");
+
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/api/userRegister",
         formData
       );
-      console.log(response.data.data);
+
       if (response.data.data == "existedUser") {
         setExistedUsername(true);
         return;

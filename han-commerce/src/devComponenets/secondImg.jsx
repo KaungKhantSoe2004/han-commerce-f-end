@@ -1,28 +1,79 @@
+import { motion } from "framer-motion";
+
 const SecondImgSection = () => {
+  const textVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  };
+
   return (
-    <div className=" bg-red-400  topImgSection">
-      <div className="   relative w-full imgContainer">
-        <img
-          src="../imgs/beauty.jpg"
-          // src="https://media-private.canva.com/1QQ9I/MAGdlp1QQ9I/1/p.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJWF6QO3UH4PAAJ6Q%2F20250129%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250129T032658Z&X-Amz-Expires=55349&X-Amz-Signature=1c9409112cc55eb4b06e70a815a1e2dddfce4b52d4acd34b0b35e21eda016b77&X-Amz-SignedHeaders=host%3Bx-amz-expected-bucket-owner&response-expires=Wed%2C%2029%20Jan%202025%2018%3A49%3A27%20GMT"
-          className=" w-full image"
-          alt="d"
-        />
-      </div>
-      <div className=" absolute absoluteText text-white">
-        <h4 className=" flex flex-auto "></h4>
-        <div className="  text-red-300 gap-4 ">
-          <div className="text-5xl text-white">BUILD PERFECT FIGURE</div>
-          <div className=" text-5xl mt-1 text-start italic font-bold">
-            {" "}
-            <span className=" mt-1 text-white">___</span> SHAPE FOR GOOD
+    <>
+      <div className="relative w-full h-[300px] sm:h-[100%] bg-gradient-to-b from-black/50 to-transparent overflow-hidden">
+        {/* Background Image with Zoom Animation */}
+        <motion.div
+          className="w-full h-full"
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 5, ease: "easeOut" }}
+        >
+          <img
+            src="../imgs/beauty.jpg"
+            className="w-full h-full object-cover"
+            alt="Beauty Banner"
+            style={{ width: "100%", height: "100%" }} // Ensure image covers the container
+          />
+        </motion.div>
+
+        {/* Text Overlay */}
+        <motion.div
+          className="absolute inset-0 flex items-center justify-start px-4 sm:px-6 md:px-12 lg:px-16 text-white z-10"
+          initial="hidden"
+          animate="visible"
+          variants={textVariants}
+        >
+          <div className="space-y-2 sm:space-y-4 md:space-y-6">
+            <motion.h1
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight"
+              variants={textVariants}
+            >
+              EMBRACE YOUR BEAUTY
+            </motion.h1>
+            <motion.h2
+              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl italic font-bold flex items-center"
+              variants={textVariants}
+            >
+              <span className="text-white mr-2">___</span> GLOW FROM WITHIN
+            </motion.h2>
+            <motion.h3
+              className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-gray-200"
+              variants={textVariants}
+            >
+              WITH CONFIDENCE
+            </motion.h3>
           </div>
-          <h3 className="   font-bold text-start  ml-10 pl-13 text-2xl text-gray-200 ">
-            AND HEALTHY LIFE
-          </h3>
-        </div>
+        </motion.div>
       </div>
-    </div>
+
+      {/* Inline CSS for Mobile Responsiveness */}
+      <style>{`
+        @media (max-width: 640px) {
+          h1 {
+            font-size: 1.5rem; /* 24px */
+          }
+          h2 {
+            font-size: 1.25rem; /* 20px */
+          }
+          h3 {
+            font-size: 1rem; /* 16px */
+          }
+        }
+      `}</style>
+    </>
   );
 };
+
 export default SecondImgSection;

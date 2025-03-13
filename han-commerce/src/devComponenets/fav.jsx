@@ -6,26 +6,14 @@ import { localCall } from "../utilities/localstorage";
 
 const FavoritesPage = () => {
   const navigate = useNavigate();
-  // This would typically come from your state management (Redux, Context, etc)
-  const [favoriteProducts, setFavoriteProducts] = useState([
-    {
-      id: "1",
-      name: "Premium Sports Shoe",
-      category: "Footwear",
-      price: 129.99,
-      rating: 4.5,
-      reviews: 128,
-      colors: ["bg-red-500", "bg-black", "bg-white"],
-      image: "/placeholder.svg",
-    },
-    // Add more favorite products as needed
-  ]);
+  const [favoriteProducts, setFavoriteProducts] = useState([]); // Initialize as an empty array
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Set initial loading state to true
 
   const handleRemoveFromFavorites = (productId) => {
-    // Implement remove from favorites logic
-    console.log("Remove from favorites:", productId);
+    setFavoriteProducts((prev) =>
+      prev.filter((product) => product.id !== productId)
+    );
   };
 
   const handleAddToCart = (productId) => {
@@ -37,10 +25,14 @@ const FavoritesPage = () => {
     const fetchData = async () => {
       const token = localStorage.getItem("han-commerce-token");
       const userData = JSON.parse(localStorage.getItem("han-commerce-user"));
+
       if (!token) {
         navigate("/");
+        return;
       }
+
       try {
+        setLoading(true); // Start loading
         const response = await axios.post(
           "http://127.0.0.1:8000/api/getFav",
           {
@@ -54,21 +46,50 @@ const FavoritesPage = () => {
           }
         );
 
-        console.log(response.data);
-
-        // setVipName(response.data.data.memberLevelName);
+        if (response.data.status === "true") {
+          setFavoriteProducts(response.data.data); // Set favorite products
+        } else {
+          setError(true); // Set error if API response is invalid
+        }
       } catch (error) {
-        console.log(error);
-        if (error.message == "Request failed with status code 401") {
+        if (error.message === "Request failed with status code 401") {
           localCall("removeToken");
           localCall("removeUser");
           navigate("/login");
         }
+        setError(true); // Set error if request fails
+      } finally {
+        setLoading(false); // Stop loading
       }
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
+
+  // Skeleton Loading Component
+  const renderSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {[...Array(4)].map((_, index) => (
+        <div
+          key={index}
+          className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg animate-pulse"
+        >
+          {/* Image Skeleton */}
+          <div className="aspect-square bg-gray-700"></div>
+
+          {/* Content Skeleton */}
+          <div className="p-4 space-y-4">
+            <div className="h-6 bg-gray-700 rounded w-3/4"></div> {/* Title */}
+            <div className="h-4 bg-gray-700 rounded w-1/2"></div>{" "}
+            {/* Category */}
+            <div className="h-4 bg-gray-700 rounded w-1/4"></div> {/* Rating */}
+            <div className="h-10 bg-gray-700 rounded"></div>{" "}
+            {/* Price and Cart */}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-black">
@@ -80,14 +101,30 @@ const FavoritesPage = () => {
             My Favorites
           </h1>
           <p className="text-gray-400 mt-2">
-            {favoriteProducts.length} items in your wishlist
+            {loading
+              ? "Loading..."
+              : `${favoriteProducts.length} items in your wishlist`}
           </p>
         </div>
       </div>
 
       {/* Favorites Grid */}
       <div className="max-w-7xl mx-auto px-4 py-12">
-        {favoriteProducts.length > 0 ? (
+        {loading ? (
+          renderSkeleton() // Show skeleton while loading
+        ) : error ? (
+          // Error State
+          <div className="text-center py-32">
+            <FiHeart className="w-16 h-16 text-red-500/20 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-white mb-2">
+              Something went wrong
+            </h2>
+            <p className="text-gray-400">
+              Unable to load your favorites. Please try again later.
+            </p>
+          </div>
+        ) : favoriteProducts.length > 0 ? (
+          // Favorites List
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {favoriteProducts.map((product) => (
               <div
@@ -139,7 +176,7 @@ const FavoritesPage = () => {
                       <div className="space-y-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
                         {/* Colors */}
                         <div className="flex space-x-2">
-                          {product.colors.map((color, index) => (
+                          {product.colors?.map((color, index) => (
                             <div
                               key={index}
                               className={`w-5 h-5 rounded-full ${color} cursor-pointer border border-transparent hover:border-red-500 transition-all duration-300`}

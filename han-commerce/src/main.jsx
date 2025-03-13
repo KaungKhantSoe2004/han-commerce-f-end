@@ -14,13 +14,17 @@ import ProfilePage from "./pages/profilePage.jsx";
 import CartPage from "./pages/cart.jsx";
 import BlogInfo from "./pages/blogInfo.jsx";
 import FavoritesPage from "./pages/favPage.jsx";
+import ProductInfoPage from "./pages/productInfo.jsx";
+import EachCategoryPage from "./pages/eachCategory.jsx";
+import SearchPage from "./pages/searchPage.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <Routes>
       <Route path="" element={<App />}>
         <Route index element={<HomePage />} />
-        <Route path="blogInfo" element={<BlogInfo />} />
+        {/* <Route path="blogInfo" element={<BlogInfo />} /> */}
+
         <Route path="contact" element={<ContactPage />} />
         <Route path="history" element={<PurchaseHistory />} />
         <Route path="blogs" element={<BlogPage />} />
@@ -28,6 +32,9 @@ createRoot(document.getElementById("root")).render(
         <Route path="cart" element={<CartPage />} />
         <Route path="favorites" element={<FavoritesPage />} />
         <Route path="Blog/:id" element={<BlogInfo />} />
+        <Route path="product/:id" element={<ProductInfoPage />} />
+        <Route path="category/:id" element={<EachCategoryPage />} />
+        {/* <Route path="search" element={<SearchPage />} /> */}
       </Route>
 
       <Route path="login" element={<Login />} />

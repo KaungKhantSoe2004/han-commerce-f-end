@@ -20,14 +20,22 @@ import axios from "axios";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const backendDomainName = "http://127.0.0.1:8000/";
   const [activeTab, setActiveTab] = useState("profile");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [requireError, setRequireError] = useState(false);
+  const [deliAddress, setDeliAddress] = useState("Ka mayut Yangon");
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
     useState(false);
   const [isEmailPreferencesModalOpen, setIsEmailPreferencesModalOpen] =
     useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-
+  const [profileImage, setProfileImage] = useState(null);
+  const [shortPasswordValidation, setShortPasswordValidation] = useState(false);
+  const [falseError, setFalseError] = useState(false);
+  const [incorrectError, setIncorrectError] = useState(false);
+  const [passwordCharactersValidation, setPasswordCharactersValidation] =
+    useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -41,21 +49,15 @@ const ProfilePage = () => {
     confirmNewPassword: "",
   });
 
-  const [emailPreferences, setEmailPreferences] = useState({
-    newsletter: true,
-    promotions: false,
-  });
-
   const fetchData = async () => {
     const token = localStorage.getItem("han-commerce-token");
     const userData = JSON.parse(localStorage.getItem("han-commerce-user"));
-
     if (!token) {
       navigate("/");
     }
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/getProfile",
+        `${backendDomainName}api/getProfile`,
         {
           id: userData.id,
         },
@@ -93,13 +95,9 @@ const ProfilePage = () => {
     fetchData();
   }, []);
 
-  const [user, setUser] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    IP: "123 Main St, Anytown, AN 12345",
-    avatar: "https://i.pravatar.cc/150?img=68",
-  });
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("han-commerce-user"))
+  );
 
   const stats = [
     { label: "Orders", value: 24, icon: FaShoppingCart },
@@ -117,33 +115,160 @@ const ProfilePage = () => {
     setChangePasswordData({ ...changePasswordData, [name]: value });
   };
 
-  const handleEmailPreferencesChange = (e) => {
-    const { name, checked } = e.target;
-    setEmailPreferences({ ...emailPreferences, [name]: checked });
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileImage(file);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setUser({
-      ...user,
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      IP: formData.address,
-    });
-    setIsModalOpen(false);
-  };
+    if (formData.name == "" || formData.email == "") {
+      setRequireError(true);
+      return;
+    }
+    const formDataToSend = new FormData();
+    formDataToSend.append("id", user.id);
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("phone", formData.phone);
+    formDataToSend.append("address", formData.address);
+    // formDataToSend.append("profile", formData.profile);
+    if (profileImage) {
+      formDataToSend.append("profile", profileImage);
+    }
 
+    try {
+      const token = localStorage.getItem("han-commerce-token");
+      const response = await axios.post(
+        `${backendDomainName}api/updateProfile`,
+        formDataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.data.status == "true") {
+        setUser({
+          ...user,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          IP: formData.address,
+          profile_photo_path:
+            response.data.data.profile_photo_path || user.profile_photo_path,
+        });
+        // localCall("setUser", response.data.data);
+        setIsModalOpen(false);
+      } else {
+        // Handle error
+        console.error("Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
+  const validatePassword = (password) => {
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return true;
+    }
+    return false; // No error
+  };
   const handleChangePasswordSubmit = async (e) => {
     e.preventDefault();
-    // Add logic to update password
-    setIsChangePasswordModalOpen(false);
+    setPasswordCharactersValidation(false);
+    setFalseError(false);
+    setShortPasswordValidation(false);
+    setIncorrectError(false);
+    if (
+      changePasswordData.newPassword != changePasswordData.confirmNewPassword
+    ) {
+      setFalseError(true);
+      return;
+    }
+    if (changePasswordData.newPassword.length < 8) {
+      setShortPasswordValidation(true);
+      return;
+    }
+    setPasswordCharactersValidation(
+      validatePassword(changePasswordData.newPassword)
+    );
+    if (
+      !shortPasswordValidation &&
+      !passwordCharactersValidation &&
+      !falseError
+    ) {
+      try {
+        const token = localStorage.getItem("han-commerce-token");
+        const postData = new FormData();
+        postData.append("id", user.id);
+        postData.append("newPassword", changePasswordData.newPassword);
+        postData.append("currentPassword", changePasswordData.currentPassword);
+        postData.append(
+          "confirmNewPassword",
+          changePasswordData.confirmNewPassword
+        );
+        const response = await axios.post(
+          `${backendDomainName}api/changePassword`,
+          postData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        if (response.data.status == "true") {
+          console.log(changePasswordData);
+          setIsChangePasswordModalOpen(false);
+        } else if (
+          response.data.status == "false" &&
+          response.data.data == "password incorrect"
+        ) {
+          setIncorrectError(true);
+        } else {
+          // Handle error
+          console.error("Failed to update password");
+        }
+      } catch (error) {
+        console.error("Error updating password:", error);
+      }
+    }
   };
 
-  const handleEmailPreferencesSubmit = async (e) => {
+  const updateDeliAddress = async (e) => {
     e.preventDefault();
-    // Add logic to update email preferences
-    setIsEmailPreferencesModalOpen(false);
+    const dataToSend = new FormData();
+    dataToSend.append("id", user.id);
+    dataToSend.append("location", deliAddress);
+
+    try {
+      const token = localStorage.getItem("han-commerce-token");
+      const response = await axios.post(
+        `${backendDomainName}api/updateLocation`,
+        dataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.data.status == "true") {
+        setIsEmailPreferencesModalOpen(false);
+      } else {
+        // Handle error
+        console.error("Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
 
   const handleLogout = () => {
@@ -153,7 +278,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className={`min-h-screen bg-black text-white `}>
+    <div className={`min-h-screen bg-black text-white`}>
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar */}
@@ -161,9 +286,13 @@ const ProfilePage = () => {
             <div className="from-black to-gray-900 bg-gradient-to-b rounded-lg p-6 mb-6">
               <div className="flex flex-col items-center">
                 <img
-                  src={user.avatar || "../imgs/defaultUser.jpg"}
+                  src={
+                    user.profile_photo_path
+                      ? `${backendDomainName}storage/${user.profile_photo_path}`
+                      : "../imgs/defaultUser.jpg"
+                  }
                   alt={user.name}
-                  className="w-32 h-32 rounded-full mb-4"
+                  className="w-32 h-32 rounded-full mb-4 object-cover"
                 />
                 <h2 className="text-2xl font-bold mb-2">{user.name}</h2>
                 <p className="text-red-500 mb-4">Premium Member</p>
@@ -232,6 +361,12 @@ const ProfilePage = () => {
                       <span>{user.IP}</span>
                     </div>
                   </div>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="mt-6 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                  >
+                    Update Profile
+                  </button>
                 </div>
               ) : (
                 <div>
@@ -251,7 +386,7 @@ const ProfilePage = () => {
                       className="flex items-center text-left w-full bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded"
                     >
                       <FaEnvelope className="text-red-500 mr-3" />
-                      <span>Update Email Preferences</span>
+                      <span>Update Delivery Address</span>
                     </button>
                     <button
                       onClick={() => setIsChangePasswordModalOpen(true)}
@@ -289,6 +424,22 @@ const ProfilePage = () => {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="avatar"
+                  className="block text-sm font-medium text-gray-400 mb-1"
+                >
+                  Profile Picture
+                </label>
+                <input
+                  type="file"
+                  id="avatar"
+                  name="profile"
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
               {["name", "email", "phone", "address"].map((field) => (
                 <div key={field}>
                   <label
@@ -308,6 +459,7 @@ const ProfilePage = () => {
                   />
                 </div>
               ))}
+
               <div className="flex justify-end mt-6">
                 <button
                   type="submit"
@@ -316,6 +468,11 @@ const ProfilePage = () => {
                   Save Changes
                 </button>
               </div>
+              {requireError && (
+                <small className=" text-red-600">
+                  You need to fill name and email section
+                </small>
+              )}
             </form>
           </div>
         </div>
@@ -358,6 +515,28 @@ const ProfilePage = () => {
                   </div>
                 )
               )}
+              <div className="errorContainer">
+                {falseError && (
+                  <small className=" block text-red-500">
+                    Your New password is not the same as new comfirm password
+                  </small>
+                )}
+                {incorrectError && (
+                  <small className=" block text-red-500">
+                    Your Old Password is incorrect.Try Again!
+                  </small>
+                )}
+                {shortPasswordValidation && (
+                  <small className=" block text-red-500">
+                    Your New password must be at least 8 characters
+                  </small>
+                )}
+                {passwordCharactersValidation && (
+                  <small className=" block text-red-500">
+                    Your New password must contain both characters and numbers
+                  </small>
+                )}
+              </div>
               <div className="flex justify-end mt-6">
                 <button
                   type="submit"
@@ -376,7 +555,7 @@ const ProfilePage = () => {
         <div className="fixed backdrop-blur-sm inset-0 flex items-center justify-center p-4">
           <div className="bg-gradient-to-b from-red-950 to-black p-6 rounded-lg w-full max-w-md mx-auto">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Update Email Preferences</h2>
+              <h2 className="text-2xl font-bold">Update Delivery Address</h2>
               <button
                 onClick={() => setIsEmailPreferencesModalOpen(false)}
                 className="text-gray-500 hover:text-white"
@@ -384,30 +563,32 @@ const ProfilePage = () => {
                 <FaTimes size={24} />
               </button>
             </div>
-            <form onSubmit={handleEmailPreferencesSubmit} className="space-y-4">
-              {Object.keys(emailPreferences).map((preference) => (
-                <div key={preference} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={preference}
-                    name={preference}
-                    checked={emailPreferences[preference]}
-                    onChange={handleEmailPreferencesChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor={preference} className="text-gray-400">
-                    {preference
-                      .replace(/([A-Z])/g, " $1")
-                      .replace(/^./, (str) => str.toUpperCase())}
-                  </label>
-                </div>
-              ))}
+            <form onSubmit={updateDeliAddress} className="space-y-4">
+              <div>
+                <label
+                  htmlFor="deliAddress"
+                  className="block text-sm font-medium text-red-400 mb-1"
+                >
+                  Tell us Where to deliver your products
+                </label>
+                <input
+                  type="text"
+                  id="deliAddress"
+                  name="deliAddress"
+                  value={deliAddress}
+                  onChange={(e) => {
+                    setDeliAddress(e.target.value);
+                  }}
+                  required
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
               <div className="flex justify-end mt-6">
                 <button
                   type="submit"
                   className="md:px-4 md:py-2 py-1 px-2 bg-red-600 text-white rounded hover:bg-red-800 cursor-pointer transition-colors"
                 >
-                  Save Preferences
+                  Save
                 </button>
               </div>
             </form>
