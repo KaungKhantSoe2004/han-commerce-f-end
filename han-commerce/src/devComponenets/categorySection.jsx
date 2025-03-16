@@ -4,12 +4,18 @@ import { localCall } from "../utilities/localstorage";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BiLoaderAlt } from "react-icons/bi";
+import { useDispatch, useSelector } from "react-redux";
+import { setInitialCategories } from "../features/categorySlice";
 
 const CategorySection = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const backendDomainName = "http://127.0.0.1:8000/";
   const [currentFeature, setCurrentFeature] = useState(0);
-  const [myCategories, setMyCategories] = useState([]);
+  const [myCategories, setMyCategories] = useState(
+    useSelector((state) => state.categories.categories)
+  );
+
   const [isLoading, setIsLoading] = useState(true); // Loading state for fetching categories
   const [error, setError] = useState(false); // Error state for fetching categories
   const token = localStorage.getItem("han-commerce-token");
@@ -29,6 +35,7 @@ const CategorySection = () => {
           setError(true);
         } else {
           setMyCategories(response.data.categories);
+          dispatch(setInitialCategories(response.data.categories));
         }
       } catch (error) {
         if (error.message === "Request failed with status code 401") {
@@ -59,6 +66,7 @@ const CategorySection = () => {
         setError(true);
       } else {
         setMyCategories(response.data.categories);
+        dispatch(setInitialCategories(response.data.categories));
       }
     } catch (error) {
       if (error.message === "Request failed with status code 401") {
@@ -111,7 +119,7 @@ const CategorySection = () => {
       <h2 className="text-3xl font-bold mb-8">Categories</h2>
 
       <div className="overflow-hidden w-full">
-        {isLoading ? (
+        {isLoading && myCategories.length == 0 ? (
           renderSkeleton() // Show skeleton while loading
         ) : error ? (
           <div className="text-center py-8">

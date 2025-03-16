@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import BlogCard from "../devComponenets/blogCard";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { setInitialBlogs } from "../features/blogSlice";
 
 export default function BlogPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [blogPosts, setBlogPosts] = useState([]);
+  const dispatch = useDispatch();
+  const [blogPosts, setBlogPosts] = useState(
+    useSelector((state) => state.blogs.blogs)
+  );
   const [loading, setLoading] = useState(true); // Loading state
   const postsPerPage = 6;
 
@@ -20,9 +25,12 @@ export default function BlogPage() {
 
       if (response.data.status === "true") {
         setBlogPosts(response.data.data);
+        dispatch(setInitialBlogs(response.data.data));
       } else {
+        alert("Sorry There is an error occured");
       }
     } catch (error) {
+      alert("Sorry There Is an Error Occured");
     } finally {
       setLoading(false); // Stop loading after fetch completes
     }
@@ -55,7 +63,7 @@ export default function BlogPage() {
   return (
     <div>
       <section className="py-12 px-4 sm:px-6 lg:px-8">
-        {loading ? (
+        {loading && blogPosts.length == 0 ? (
           renderSkeleton() // Show skeleton while loading
         ) : (
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

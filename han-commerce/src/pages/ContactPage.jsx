@@ -25,7 +25,6 @@ const ContactPage = () => {
       )
       .then(
         (result) => {
-          console.log(result.text);
           setIsSending(false);
           alert("Message Posted Successfully!");
           reset(); // Reset the form after successful submission

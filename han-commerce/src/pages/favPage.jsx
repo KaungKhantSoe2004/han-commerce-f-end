@@ -4,17 +4,20 @@ import { useNavigate } from "react-router-dom";
 import { localCall } from "../utilities/localstorage";
 import axios from "axios";
 import ProductModal from "../devComponenets/productModal";
+import { useDispatch, useSelector } from "react-redux";
+import { removeFromFavorites, setFavorites } from "../features/favoriteSlice";
 
 export default function FavoritesPage() {
   // delcaring Navigate
   const userData = localStorage.getItem("han-commerce-user");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const token = localStorage.getItem("han-commerce-token");
   const backendDomainName = "http://127.0.0.1:8000/";
-  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  const favoritesFromRedux = useSelector((state) => state.favorites.favorites);
+  const [favoriteProducts, setFavoriteProducts] = useState(favoritesFromRedux);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const removeFav = async (id) => {
-    console.log(id);
     try {
       const response = await axios.post(
         `${backendDomainName}api/removeMyFav/`,
@@ -65,6 +68,7 @@ export default function FavoritesPage() {
 
       if (response.data.status == "true") {
         setFavoriteProducts(response.data.data);
+        dispatch(setFavorites(response.data.data));
       } else {
         console.log("There is error");
       }
@@ -127,7 +131,7 @@ export default function FavoritesPage() {
                             setFavoriteProducts((prevProducts) =>
                               prevProducts.filter((p) => p.id !== product.id)
                             );
-                            console.log(favoriteProducts);
+                            dispatch(removeFromFavorites(product));
                           }}
                           className="text-red-500 hover:text-white transition-colors duration-300"
                         >

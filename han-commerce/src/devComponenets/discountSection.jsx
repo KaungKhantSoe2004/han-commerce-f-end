@@ -7,11 +7,18 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaHeart } from "react-icons/fa";
 import { BiLoaderAlt } from "react-icons/bi";
+import { useDispatch, useSelector } from "react-redux";
+import { setInitialDiscounts } from "../features/discountSlice";
+import { addToFavorites, removeFromFavorites } from "../features/favoriteSlice";
 
 const DiscountSection = () => {
+  const dispatch = useDispatch();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentFeature, setCurrentFeature] = useState(0);
-  const [discountedProducts, setDiscountedProducts] = useState([]);
+  const [discountedProducts, setDiscountedProducts] = useState(
+    useSelector((state) => state.discount.discount)
+  );
+
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true); // Loading state for fetching discounted products
   const [error, setError] = useState(false); // Error state for fetching discounted products
@@ -73,6 +80,8 @@ const DiscountSection = () => {
           setError(true);
         } else {
           setDiscountedProducts(response.data.data);
+
+          dispatch(setInitialDiscounts(response.data.data));
         }
       } catch (error) {
         if (error.message === "Request failed with status code 401") {
@@ -103,6 +112,8 @@ const DiscountSection = () => {
         setError(true);
       } else {
         setDiscountedProducts(response.data.data);
+
+        dispatch(setInitialDiscounts(response.data.data));
       }
     } catch (error) {
       if (error.message === "Request failed with status code 401") {
@@ -155,7 +166,7 @@ const DiscountSection = () => {
 
       {/* Auto Moving Carousel */}
       <div className="relative overflow-hidden h-[220px] sm:h-[350px] lg:h-[400px]">
-        {isFetching ? (
+        {isFetching && discountedProducts.length == 0 ? (
           renderSkeleton() // Show skeleton while loading
         ) : error ? (
           <div className="text-center py-8">
@@ -211,6 +222,11 @@ const DiscountSection = () => {
                             onClick={(e) => {
                               e.stopPropagation();
                               toggleFavorite(product.id, product.isFav);
+                              if (product.isFav) {
+                                dispatch(removeFromFavorites(product));
+                              } else {
+                                dispatch(addToFavorites(product));
+                              }
                             }}
                             className="text-white/80 hover:text-red-500 transition-colors duration-300 float-right"
                           >

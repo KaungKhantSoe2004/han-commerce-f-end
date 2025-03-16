@@ -3,16 +3,64 @@ import { FiHeart, FiShoppingCart, FiStar } from "react-icons/fi";
 import axios from "axios";
 import ProductModal from "./ProductModal";
 import { FaHeart } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { setInitialSuggestion } from "../features/suggestionSlice";
+import { useNavigate } from "react-router-dom";
+import { localCall } from "../utilities/localstorage";
+import { addToFavorites, removeFromFavorites } from "../features/favoriteSlice";
 
 const backendDomainName = "http://127.0.0.1:8000/";
 
 const Suggestion = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState(
+    useSelector((state) => state.suggestion.suggestion)
+  );
   const [error, setError] = useState(null);
 
   const token = localStorage.getItem("han-commerce-token");
+
+  const toggleFavorite = async (id, isFav) => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    try {
+      // setLoading(true);
+      const endpoint = isFav ? "removeFav" : "postFav";
+      const response = await axios.post(
+        `${backendDomainName}api/${endpoint}/`,
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.data.status === "false") {
+        return;
+      }
+
+      // Update the favorite status in the UI
+      setSuggestions((prevProducts) =>
+        prevProducts.map((p) => (p.id === id ? { ...p, isFav: !isFav } : p))
+      );
+    } catch (error) {
+      if (error.message === "Request failed with status code 401") {
+        localCall("removeToken");
+        localCall("removeUser");
+        navigate("/login");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch suggestions from the backend
   useEffect(() => {
@@ -42,6 +90,7 @@ const Suggestion = () => {
 
         if (response.data.status == "true") {
           setSuggestions(response.data.defaultProducts);
+          dispatch(setInitialSuggestion(response.data.defaultProducts));
         } else {
           setError("No products found.");
         }
@@ -80,7 +129,7 @@ const Suggestion = () => {
     <section className="max-w-7xl mx-auto mt-3 px-4">
       <h2 className="text-3xl font-bold mb-8">Suggested For You</h2>
 
-      {loading ? (
+      {loading && suggestions.length == 0 ? (
         <SkeletonLoader />
       ) : error ? (
         <div className="text-center text-red-500 text-lg">{error}</div>
@@ -123,11 +172,33 @@ const Suggestion = () => {
                     <div className="space-y-2">
                       <div className="flex justify-end items-end">
                         {product.isFav ? (
-                          <button className="text-white/80 hover:text-red-500 transition-colors duration-300 float-right">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(product.id, product.isFav);
+                              if (product.isFav) {
+                                dispatch(removeFromFavorites(product));
+                              } else {
+                                dispatch(addToFavorites(product));
+                              }
+                            }}
+                            className="text-white/80 hover:text-red-500 transition-colors duration-300 float-right"
+                          >
                             <FaHeart className="w-5 h-5 text-red-600 " />
                           </button>
                         ) : (
-                          <button className="text-white/80 hover:text-red-500 transition-colors duration-300 float-right">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(product.id, product.isFav);
+                              if (product.isFav) {
+                                dispatch(removeFromFavorites(product));
+                              } else {
+                                dispatch(addToFavorites(product));
+                              }
+                            }}
+                            className="text-white/80 hover:text-red-500 transition-colors duration-300 float-right"
+                          >
                             <FiHeart className="w-5 h-5 " />
                           </button>
                         )}

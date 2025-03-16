@@ -1,418 +1,3 @@
-// "use client";
-
-// import { useState, useEffect } from "react";
-// import { localCall } from "../utilities/localstorage";
-// import axios from "axios";
-// import { useNavigate } from "react-router-dom";
-// import ProductModal from "../devComponenets/productModal";
-// import { motion, AnimatePresence } from "framer-motion";
-
-// const backendDomainName = "http://127.0.0.1:8000/";
-
-// function SearchBar({ searchTerm, onSearch }) {
-//   return (
-//     <motion.div
-//       initial={{ opacity: 0, y: -20 }}
-//       animate={{ opacity: 1, y: 0 }}
-//       className="mb-12 max-w-3xl mx-auto px-4 sm:px-0"
-//     >
-//       <div className="relative flex items-center bg-gray-800 rounded-full overflow-hidden shadow-xl shadow-gray-900/50 border border-gray-700">
-//         <input
-//           type="text"
-//           placeholder="What are you looking for today?"
-//           value={searchTerm}
-//           onChange={(e) => onSearch(e.target.value)}
-//           className="w-full px-6 py-4 bg-transparent text-white border-none focus:outline-none focus:ring-2 focus:ring-red-500/50 placeholder-gray-500 text-base transition-all duration-300"
-//         />
-//         <motion.button
-//           whileHover={{ scale: 1.05 }}
-//           whileTap={{ scale: 0.95 }}
-//           onClick={() => onSearch(searchTerm)}
-//           className="flex items-center justify-center px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold focus:outline-none transition-all duration-300"
-//         >
-//           <svg
-//             xmlns="http://www.w3.org/2000/svg"
-//             className="h-5 w-5"
-//             fill="none"
-//             viewBox="0 0 24 24"
-//             stroke="currentColor"
-//           >
-//             <path
-//               strokeLinecap="round"
-//               strokeLinejoin="round"
-//               strokeWidth={2}
-//               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-//             />
-//           </svg>
-//           <span className="hidden sm:inline ml-2">Search</span>
-//         </motion.button>
-//       </div>
-//     </motion.div>
-//   );
-// }
-
-// function SkeletonFilterButtons() {
-//   return (
-//     <div className="flex flex-wrap gap-3 mb-8">
-//       {Array(7)
-//         .fill(0)
-//         .map((_, index) => (
-//           <div
-//             key={index}
-//             className="px-4 py-2 bg-gray-800 rounded-full text-sm font-medium animate-pulse w-24 h-9"
-//           ></div>
-//         ))}
-//     </div>
-//   );
-// }
-
-// function FilterButtons({ categories, activeFilter, setActiveFilter, loading }) {
-//   return (
-//     <AnimatePresence>
-//       {loading ? (
-//         <SkeletonFilterButtons />
-//       ) : (
-//         <motion.div
-//           initial={{ opacity: 0 }}
-//           animate={{ opacity: 1 }}
-//           className="flex flex-wrap gap-3 mb-8 justify-center"
-//         >
-//           {categories.map((category) => (
-//             <motion.button
-//               key={category}
-//               whileHover={{ scale: 1.05 }}
-//               whileTap={{ scale: 0.95 }}
-//               onClick={() => setActiveFilter(category)}
-//               className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-//                 activeFilter === category
-//                   ? "bg-red-600 text-white shadow-lg shadow-red-600/20 border border-red-500"
-//                   : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white border border-gray-700"
-//               }`}
-//             >
-//               {category}
-//             </motion.button>
-//           ))}
-//         </motion.div>
-//       )}
-//     </AnimatePresence>
-//   );
-// }
-
-// function PriceFilter({ minPrice, maxPrice, onPriceChange }) {
-//   return (
-//     <motion.div
-//       initial={{ opacity: 0, y: 20 }}
-//       animate={{ opacity: 1, y: 0 }}
-//       transition={{ delay: 0.2 }}
-//       className="mb-8 bg-gray-900 p-6 rounded-xl shadow-xl border border-gray-800"
-//     >
-//       <h3 className="text-lg font-semibold text-red-500 mb-4">Price Range</h3>
-//       <div className="flex flex-col sm:flex-row gap-4">
-//         <div className="relative flex-1">
-//           {/* <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-//             Kyat
-//           </span> */}
-//           <input
-//             type="number"
-//             placeholder="Min Price"
-//             value={minPrice}
-//             onChange={(e) => onPriceChange("min", e.target.value)}
-//             className="w-full pl-8 pr-4 py-3 bg-gray-800 text-white border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-full transition-all duration-300"
-//           />
-//         </div>
-//         <div className="relative flex-1">
-//           {/* <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-//             Kyat
-//           </span> */}
-//           <input
-//             type="number"
-//             placeholder="Max Price"
-//             value={maxPrice}
-//             onChange={(e) => onPriceChange("max", e.target.value)}
-//             className="w-full pl-8 pr-4 py-3 bg-gray-800 text-white border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 rounded-full transition-all duration-300"
-//           />
-//         </div>
-//       </div>
-//       <motion.div
-//         className="mt-4 flex justify-between text-sm text-gray-400"
-//         initial={{ opacity: 0 }}
-//         animate={{ opacity: 1 }}
-//         transition={{ delay: 0.3 }}
-//       >
-//         <span>{minPrice ? `${minPrice}` : "0 Kyat"} min</span>
-//         <span>{maxPrice ? `${maxPrice}` : "No max"}</span>
-//       </motion.div>
-//       <motion.div
-//         className="mt-4 relative h-2 bg-gray-800 rounded-full overflow-hidden"
-//         initial={{ opacity: 0 }}
-//         animate={{ opacity: 1 }}
-//         transition={{ delay: 0.4 }}
-//       >
-//         <motion.div
-//           className="absolute h-full bg-red-600 rounded-full"
-//           style={{
-//             left: `${(minPrice / 1000) * 100}%`,
-//             right: `${100 - (maxPrice / 1000) * 100}%`,
-//           }}
-//         />
-//       </motion.div>
-//     </motion.div>
-//   );
-// }
-
-// function SkeletonLoader() {
-//   return (
-//     <div className="bg-gray-900 rounded-xl overflow-hidden shadow-lg animate-pulse">
-//       <div className="w-full h-48 bg-gray-800"></div>
-//       <div className="p-5">
-//         <div className="h-6 bg-gray-800 rounded w-3/4 mb-3"></div>
-//         <div className="h-4 bg-gray-800 rounded w-1/2 mb-4"></div>
-//         <div className="flex justify-between items-center">
-//           <div className="h-6 bg-gray-800 rounded w-1/4"></div>
-//           <div className="h-6 bg-gray-800 rounded w-1/4"></div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// function ProductList({
-//   products,
-//   isSearching,
-//   loading,
-//   onCartClick,
-//   navigate,
-// }) {
-//   const displayedProducts = isSearching ? products : products.slice(0, 10);
-
-//   return (
-//     <motion.div
-//       className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
-//       initial={{ opacity: 0 }}
-//       animate={{ opacity: 1 }}
-//       transition={{ delay: 0.4 }}
-//     >
-//       {loading ? (
-//         Array(5)
-//           .fill(0)
-//           .map((_, index) => <SkeletonLoader key={index} />)
-//       ) : displayedProducts.length > 0 ? (
-//         displayedProducts.map((product) => (
-//           <motion.div
-//             key={product.id}
-//             whileHover={{ y: -5 }}
-//             className="bg-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-800 hover:border-red-500/50 transition-all duration-300 relative"
-//           >
-//             <motion.button
-//               whileHover={{ scale: 1.1 }}
-//               whileTap={{ scale: 0.9 }}
-//               onClick={(e) => {
-//                 e.stopPropagation();
-//                 onCartClick(product);
-//               }}
-//               className="absolute top-3 right-3 bg-red-600 p-2 rounded-full hover:bg-red-700 transition-colors duration-300 z-10"
-//             >
-//               <svg
-//                 xmlns="http://www.w3.org/2000/svg"
-//                 className="h-5 w-5 text-white"
-//                 fill="none"
-//                 viewBox="0 0 24 24"
-//                 stroke="currentColor"
-//               >
-//                 <path
-//                   strokeLinecap="round"
-//                   strokeLinejoin="round"
-//                   strokeWidth={2}
-//                   d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-//                 />
-//               </svg>
-//             </motion.button>
-
-//             <div
-//               onClick={() => navigate(`/product/${product.id}`)}
-//               className="cursor-pointer"
-//             >
-//               <div className="w-full h-48 overflow-hidden">
-//                 <img
-//                   src={`${backendDomainName}storage/${product.cover_photo}`}
-//                   alt={product.name}
-//                   className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-//                 />
-//               </div>
-//               <div className="p-5">
-//                 <h3 className="text-lg font-semibold mb-2 text-red-500 truncate">
-//                   {product.name}
-//                 </h3>
-//                 <p className="text-sm text-gray-400 mb-3 truncate">
-//                   {product.category}
-//                 </p>
-//                 <div className="flex justify-between items-center">
-//                   <span className="text-lg font-bold text-white">
-//                     {Number(product.price).toFixed(2)} Kyats
-//                   </span>
-//                   {product.discount > 0 && (
-//                     <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-medium">
-//                       {product.discount}% OFF
-//                     </span>
-//                   )}
-//                 </div>
-//               </div>
-//             </div>
-//           </motion.div>
-//         ))
-//       ) : (
-//         <motion.div
-//           className="col-span-full text-center text-gray-500 py-10"
-//           initial={{ opacity: 0 }}
-//           animate={{ opacity: 1 }}
-//         >
-//           <p className="text-xl font-medium">No products found</p>
-//           <p className="text-sm mt-2">Try adjusting your search or filters</p>
-//         </motion.div>
-//       )}
-//     </motion.div>
-//   );
-// }
-
-// function SearchPage() {
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [activeFilter, setActiveFilter] = useState("All");
-//   const [isSearching, setIsSearching] = useState(false);
-//   const [loading, setLoading] = useState(true);
-//   const [selectedProduct, setSelectedProduct] = useState(null);
-//   const [products, setProducts] = useState([]);
-//   const [filteredProducts, setFilteredProducts] = useState(products);
-//   const [categories, setCategories] = useState([
-//     "All",
-//     "Electronics",
-//     "Fashion",
-//     "Sports",
-//     "Home & Kitchen",
-//     "Beauty",
-//     "Office",
-//   ]);
-//   const [minPrice, setMinPrice] = useState("");
-//   const [maxPrice, setMaxPrice] = useState("");
-//   const navigate = useNavigate();
-
-//   const fetchData = async () => {
-//     try {
-//       const response = await axios.get(
-//         `${backendDomainName}api/getAllProducts`
-//       );
-//       if (response.data.status === "false") {
-//         console.log("error occurred");
-//         setLoading(false);
-//         return;
-//       } else {
-//         setProducts(response.data.data);
-//         setCategories(response.data.categories);
-//         setLoading(false);
-//       }
-//     } catch (error) {
-//       console.log(error);
-//       setLoading(false);
-//       if (error.message === "Request failed with status code 401") {
-//         localCall("removeToken");
-//         localCall("removeUser");
-//         navigate("/login");
-//       }
-//     }
-//   };
-
-//   useEffect(() => {
-//     if (products.length > 0) {
-//       const filtered = products.filter(
-//         (product) =>
-//           product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-//           (activeFilter === "All" || product.category === activeFilter) &&
-//           (minPrice === "" || product.price >= parseFloat(minPrice)) &&
-//           (maxPrice === "" || product.price <= parseFloat(maxPrice))
-//       );
-//       const timer = setTimeout(() => {
-//         setFilteredProducts(filtered);
-//         setIsSearching(searchTerm.length > 0);
-//       }, 1000);
-//       return () => clearTimeout(timer);
-//     }
-//   }, [searchTerm, activeFilter, products, minPrice, maxPrice]);
-
-//   useEffect(() => {
-//     setLoading(true);
-//     fetchData();
-//   }, []);
-
-//   const handleSearch = (term) => {
-//     setSearchTerm(term);
-//   };
-
-//   const handlePriceChange = (type, value) => {
-//     if (type === "min") {
-//       setMinPrice(value);
-//     } else {
-//       setMaxPrice(value);
-//     }
-//   };
-
-//   const clearFilters = () => {
-//     setSearchTerm("");
-//     setActiveFilter("All");
-//     setMinPrice("");
-//     setMaxPrice("");
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-black text-white">
-//       <div className="container mx-auto px-4 py-12">
-//         <motion.h1
-//           initial={{ opacity: 0, y: -30 }}
-//           animate={{ opacity: 1, y: 0 }}
-//           className="text-5xl font-bold text-red-600 mb-12 text-center bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent"
-//         >
-//           Product Search
-//         </motion.h1>
-//         <SearchBar searchTerm={searchTerm} onSearch={handleSearch} />
-//         <FilterButtons
-//           categories={categories}
-//           activeFilter={activeFilter}
-//           setActiveFilter={setActiveFilter}
-//           loading={loading}
-//         />
-//         <PriceFilter
-//           minPrice={minPrice}
-//           maxPrice={maxPrice}
-//           onPriceChange={handlePriceChange}
-//         />
-//         <motion.button
-//           whileHover={{ scale: 1.05 }}
-//           whileTap={{ scale: 0.95 }}
-//           onClick={clearFilters}
-//           className="mb-10 px-6 py-2 bg-transparent border border-red-600 text-red-600 rounded-full hover:bg-red-600 hover:text-white transition-all duration-300"
-//         >
-//           Clear Filters
-//         </motion.button>
-//         <ProductList
-//           products={filteredProducts}
-//           isSearching={isSearching}
-//           loading={loading}
-//           onCartClick={(product) => setSelectedProduct(product)}
-//           navigate={navigate}
-//         />
-//         <AnimatePresence>
-//           {selectedProduct && (
-//             <ProductModal
-//               selectedProduct={selectedProduct}
-//               setSelectedProduct={setSelectedProduct}
-//             />
-//           )}
-//         </AnimatePresence>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default SearchPage;
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -421,11 +6,15 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ProductModal from "../devComponenets/productModal";
 import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { setInitialProducts } from "../features/productSlice";
+import { setInitialCategories } from "../features/categorySlice";
 
 const backendDomainName = "http://127.0.0.1:8000/";
 
 function SearchBar({ searchTerm, onSearch }) {
   const controls = useAnimation();
+
   const inputRef = useRef(null);
 
   const handleFocus = () => {
@@ -683,7 +272,7 @@ function ProductList({
       animate={{ opacity: 1 }}
       transition={{ delay: 0.4 }}
     >
-      {loading ? (
+      {loading && displayedProducts.length == 0 ? (
         Array(10)
           .fill(0)
           .map((_, index) => <SkeletonLoader key={index} />)
@@ -816,22 +405,21 @@ function MobileFilterDrawer({ isOpen, onClose, children }) {
 }
 
 function SearchPage() {
+  const dispatch = useDispatch();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [isSearching, setIsSearching] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(
+    useSelector((state) => state.products.products)
+  );
+
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [categories, setCategories] = useState([
-    "All",
-    "Electronics",
-    "Fashion",
-    "Sports",
-    "Home & Kitchen",
-    "Beauty",
-    "Office",
-  ]);
+  const [categories, setCategories] = useState(
+    useSelector((state) => state.categories.categories)
+  );
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -849,8 +437,10 @@ function SearchPage() {
         return;
       } else {
         setProducts(response.data.data);
+        dispatch(setInitialProducts(response.data.data));
         setFilteredProducts(response.data.data);
         setCategories([...response.data.categories]);
+        dispatch(setInitialCategories(response.data.categories));
         setLoading(false);
       }
     } catch (error) {
@@ -936,7 +526,7 @@ function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div id="search" className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-12">
         <motion.h1
           initial={{ opacity: 0, y: -30 }}

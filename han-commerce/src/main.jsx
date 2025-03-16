@@ -19,6 +19,7 @@ import EachCategoryPage from "./pages/eachCategory.jsx";
 import SearchPage from "./pages/searchPage.jsx";
 
 createRoot(document.getElementById("root")).render(
+  
   <BrowserRouter>
     <Routes>
       <Route path="" element={<App />}>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import "../styles/home.css";
 import {
   FaTrash,
   FaMinus,
@@ -78,7 +79,6 @@ const CartPage = () => {
         setError(true); // Set error if API response is invalid
       }
     } catch (error) {
-      console.log(error);
       if (error.message === "Request failed with status code 401") {
         localCall("removeToken");
         localCall("removeUser");
@@ -254,7 +254,13 @@ const CartPage = () => {
         ) : cartItems.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-lg md:text-xl mb-4">Your cart is empty</p>
-            <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 md:px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105 text-sm md:text-base">
+            <button
+              onClick={() => {
+                // navigate("/");
+                navigate("/#search");
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 md:px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105 text-sm md:text-base"
+            >
               Continue Shopping
             </button>
           </div>

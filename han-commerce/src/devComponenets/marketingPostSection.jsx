@@ -9,10 +9,20 @@ import { localCall } from "../utilities/localstorage";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setInitialBlogs } from "../features/blogSlice";
 
 const backendDomainName = "http://127.0.0.1:8000/";
 
-const MarketingPostCard = ({ title, content, icon, author, blog_img, cta }) => {
+const MarketingPostCard = ({
+  id,
+  title,
+  content,
+  icon,
+  author,
+  blog_img,
+  cta,
+}) => {
   const IconComponent = FaIcons[icon];
 
   // Function to truncate content to a specified length
@@ -23,7 +33,7 @@ const MarketingPostCard = ({ title, content, icon, author, blog_img, cta }) => {
 
   // Limit content to 100 characters (you can adjust this number)
   const previewContent = truncateContent(content, 100);
-
+  const navigate = useNavigate();
   return (
     <div className="bg-black hover:bg-black/40 rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105">
       <div className="relative h-48 sm:h-64">
@@ -46,7 +56,12 @@ const MarketingPostCard = ({ title, content, icon, author, blog_img, cta }) => {
       </div>
       <div className="p-6">
         <p className="text-gray-300 mb-4">{previewContent}</p>
-        <button className="flex items-center space-x-2 text-red-500 font-semibold hover:text-red-400 transition-colors duration-300">
+        <button
+          onClick={() => {
+            navigate(`blog/${id}`);
+          }}
+          className="flex items-center space-x-2 text-red-500 font-semibold hover:text-red-400 transition-colors duration-300"
+        >
           <span>{cta}</span>
           <FaArrowRight className="w-5 h-5" />
         </button>
@@ -56,9 +71,12 @@ const MarketingPostCard = ({ title, content, icon, author, blog_img, cta }) => {
 };
 
 const MarketingPostSection = () => {
+  const dispatch = useDispatch();
   const token = localStorage.getItem("han-commerce-token");
   const navigate = useNavigate();
-  const [myBlogs, setMyBlogs] = useState([]);
+  const [myBlogs, setMyBlogs] = useState(
+    useSelector((state) => state.blogs.blogs)
+  );
   const [loading, setLoading] = useState(true);
   const userData = JSON.parse(localStorage.getItem("han-commerce-user"));
 
@@ -71,6 +89,7 @@ const MarketingPostSection = () => {
         return;
       } else {
         setMyBlogs(response.data.blogs);
+        dispatch(setInitialBlogs(response.data.blogs));
         setLoading(false);
       }
     } catch (error) {
@@ -98,7 +117,7 @@ const MarketingPostSection = () => {
           Explore our latest deals and promotions
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {loading
+          {loading && myBlogs.length == 0
             ? Array(6)
                 .fill(0)
                 .map((_, index) => (

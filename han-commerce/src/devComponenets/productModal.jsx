@@ -96,7 +96,7 @@ const ProductModal = ({ selectedProduct, setSelectedProduct }) => {
       ]);
     }
     setSelectedProduct(null); // Close the modal
-    navigate("cart");
+    navigate("/cart");
   };
 
   const handleAddToFav = (id) => {

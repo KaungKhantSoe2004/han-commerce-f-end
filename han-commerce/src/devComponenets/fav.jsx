@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import { FiHeart, FiStar, FiShoppingCart, FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { localCall } from "../utilities/localstorage";
+import { useSelector } from "react-redux";
 
 const FavoritesPage = () => {
   const navigate = useNavigate();
-  const [favoriteProducts, setFavoriteProducts] = useState([]); // Initialize as an empty array
+  const [favoriteProducts, setFavoriteProducts] = useState(useSelector((state)=> state.)); // Initialize as an empty array
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true); // Set initial loading state to true
 

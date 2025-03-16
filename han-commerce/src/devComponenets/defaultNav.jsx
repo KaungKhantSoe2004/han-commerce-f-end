@@ -5,7 +5,7 @@ import {
   FaShoppingCart as ShoppingCart,
   FaHeart as Heart,
   FaUser as User,
-  FaCross as X,
+  FaTimes as X,
   FaSignOutAlt as Logout,
 } from "react-icons/fa";
 import { BiMenu as Menu } from "react-icons/bi";
@@ -133,7 +133,7 @@ const DefaultNavBar = () => {
               </div>
               <div
                 onClick={() => globalLogout(navigate)}
-                className="cursor-pointer hover:bg-red-700/70 p-2 rounded-lg bg-gray-700/50 flex items-center space-x-2 transition-all duration-300 hover:scale-105"
+                className="cursor-pointer hover:bg-red-700/70 p-2 rounded-lg bg-gray-800/50 flex items-center space-x-2 transition-all duration-300 hover:scale-105"
               >
                 <Logout className="h-4 w-4 text-white" />
                 <span className="text-sm text-white">Logout</span>
@@ -163,7 +163,7 @@ const DefaultNavBar = () => {
                 </div>
                 <div
                   onClick={() => navigate("favorites")}
-                  className="cursor-pointer hover:bg-red-700/70 p-2 rounded-full transition-all duration-300 hover:scale-110"
+                  className="cursor-pointer hover:bg-red-200/70 p-2 rounded-full transition-all duration-300 hover:scale-110"
                   title="Favorites"
                 >
                   <Heart className="h-6 w-6" />

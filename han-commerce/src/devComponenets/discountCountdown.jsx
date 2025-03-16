@@ -2,10 +2,19 @@ import { useState, useEffect } from "react";
 import { localCall } from "../utilities/localstorage";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setCountDown } from "../features/countdownSlice";
 
-export default function DiscountCountdown() {
+export default function DiscountCountdown({ scrollToSearch }) {
+  const dispatch = useDispatch();
+  const userData = JSON.parse(localStorage.getItem("han-commerce-user"));
+  const token = localStorage.getItem("han-commerce-token");
+  console.log(token, userData);
   const [error, setError] = useState(false);
-  const [product, setProduct] = useState({});
+  const [product, setProduct] = useState(
+    useSelector((state) => state.countDown.countDown)
+  );
+
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -41,6 +50,7 @@ export default function DiscountCountdown() {
         setError(true);
       } else {
         setProduct(response.data.product);
+        dispatch(setCountDown(response.data.product));
         setDealEndTime(
           new Date(response.data.product.end_time_discount).getTime()
         );
@@ -60,7 +70,13 @@ export default function DiscountCountdown() {
   };
 
   useEffect(() => {
+    // if (product == {}) {
+    if (window.location.hash === "#search") {
+      scrollToSearch();
+    }
     fetchData();
+    // console.log("fetching");
+    // }
   }, []);
 
   useEffect(() => {
@@ -82,7 +98,10 @@ export default function DiscountCountdown() {
 
   if (isFetching) {
     return (
-      <section className="bg-black text-white py-16 px-6 text-center">
+      <section
+        id="discount"
+        className="bg-black text-white py-16 px-6 text-center"
+      >
         <div className="max-w-5xl mx-auto animate-pulse space-y-6">
           {/* Headline Skeleton */}
           <div className="h-8 w-1/2 bg-gray-700 mx-auto mb-4 rounded"></div>
@@ -204,9 +223,23 @@ export default function DiscountCountdown() {
           </div>
 
           {/* Shop Now Button */}
-          <button className="mt-5 w-full md:w-auto bg-red-500 hover:bg-red-700 text-white px-6 py-3 rounded-lg text-lg font-semibold transition-all duration-300">
-            Shop Now
-          </button>
+          {token == null ? (
+            <button
+              onClick={() => {
+                navigate("register");
+              }}
+              className="mt-5 w-full md:w-auto bg-red-500 hover:bg-red-700 text-white px-6 py-3 rounded-lg text-lg font-semibold transition-all duration-300"
+            >
+              Register To Shop
+            </button>
+          ) : (
+            <button
+              onClick={() => scrollToSearch()}
+              className="mt-5 w-full md:w-auto bg-red-900 hover:bg-red-700 text-white px-6 py-3 rounded-lg text-lg font-semibold transition-all duration-300"
+            >
+              Shop Now
+            </button>
+          )}
         </div>
       </div>
     </section>

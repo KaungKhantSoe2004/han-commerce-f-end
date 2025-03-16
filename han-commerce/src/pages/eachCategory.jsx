@@ -23,7 +23,7 @@ const EachCategoryPage = () => {
             id,
           }
         );
-        console.log(response);
+
         if (response.data.status === "true") {
           setMyProducts(response.data.data);
         } else {

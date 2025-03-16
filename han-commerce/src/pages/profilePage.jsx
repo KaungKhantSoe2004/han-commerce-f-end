@@ -17,9 +17,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { localCall } from "../utilities/localstorage";
 import axios from "axios";
-
+import { useDispatch, useSelector } from "react-redux";
+import { setInitialUser } from "../features/userSlice";
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const backendDomainName = "http://127.0.0.1:8000/";
   const [activeTab, setActiveTab] = useState("profile");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,6 +54,7 @@ const ProfilePage = () => {
   const fetchData = async () => {
     const token = localStorage.getItem("han-commerce-token");
     const userData = JSON.parse(localStorage.getItem("han-commerce-user"));
+
     if (!token) {
       navigate("/");
     }
@@ -75,6 +78,8 @@ const ProfilePage = () => {
         return;
       } else {
         setUser(response.data.data);
+        dispatch(setInitialUser(response.data.data));
+
         setFormData({
           name: response.data.data.name,
           email: response.data.data.email,
@@ -95,9 +100,7 @@ const ProfilePage = () => {
     fetchData();
   }, []);
 
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("han-commerce-user"))
-  );
+  const [user, setUser] = useState(useSelector((state) => state.user.user));
 
   const stats = [
     { label: "Orders", value: 24, icon: FaShoppingCart },

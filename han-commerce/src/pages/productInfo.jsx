@@ -6,6 +6,7 @@ import { localCall } from "../utilities/localstorage";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import ProductModal from "../devComponenets/productModal";
 
 // Mock product data
 const product = {
@@ -89,10 +90,12 @@ const ProductInfoPage = () => {
   const navigate = useNavigate();
   const [productInfo, setProductInfo] = useState(product);
   const backendDomainName = "http://127.0.0.1:8000/";
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [catalogs, setCatalogs] = useState([]);
   const [loading, setLoading] = useState(true); // Start with loading true
   const { id } = useParams();
   const token = localStorage.getItem("han-commerce-token");
+  const userData = JSON.parse(localStorage.getItem("han-commerce-user"));
 
   // Add or remove product from favorites
   const toggleFavorite = async (id, isFav) => {
@@ -103,6 +106,7 @@ const ProductInfoPage = () => {
     try {
       setLoading(true);
       const endpoint = isFav ? "removeFav" : "postFav";
+      console.log(userData.id);
       const response = await axios.post(
         `${backendDomainName}api/${endpoint}/`,
         { id },
@@ -130,9 +134,38 @@ const ProductInfoPage = () => {
 
   // Fetch data from the backend
   const fetchData = async () => {
+    if (userData == null) {
+      try {
+        const response = await axios.post(
+          `${backendDomainName}api/getProduct`,
+          {
+            id,
+          }
+        );
+        console.log(response);
+        if (response.data.status === "false") {
+          console.log("error occurred");
+          setProductInfo(null); // Set productInfo to null if no data is found
+        } else {
+          setProductInfo(response.data.data);
+          setCatalogs(JSON.parse(response.data.data.product_catalog));
+          // console.log(response.data.data.product_catalog);
+        }
+      } catch (error) {
+        console.log(error);
+        if (error.message === "Request failed with status code 401") {
+          localCall("removeToken");
+          localCall("removeUser");
+          navigate("/login");
+        }
+      } finally {
+        setLoading(false); // Stop loading regardless of success or failure
+      }
+    }
     try {
       const response = await axios.post(`${backendDomainName}api/getProduct`, {
         id,
+        userId: userData.id,
       });
       console.log(response);
       if (response.data.status === "false") {
@@ -273,25 +306,34 @@ const ProductInfoPage = () => {
               </span>
             </div>
 
-            <div className="space-y-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition duration-300"
-              >
-                Add to Cart
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  toggleFavorite(product.id, product.isFav);
-                }}
-                className="w-full bg-gray-800 text-red-500 py-3 px-6 rounded-lg font-semibold hover:bg-gray-700 transition duration-300"
-              >
-                Add to Wishlist
-              </motion.button>
-            </div>
+            {userData != null && (
+              <div className="space-y-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => {
+                    setSelectedProduct(productInfo);
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition duration-300"
+                >
+                  Add to Cart
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    console.log("toggling");
+                    toggleFavorite(productInfo.id, productInfo.isFav);
+                    productInfo.isFav = !productInfo.isFav;
+                  }}
+                  className="w-full bg-gray-800 text-red-500 py-3 px-6 rounded-lg font-semibold hover:bg-gray-700 transition duration-300"
+                >
+                  {productInfo.isFav
+                    ? "Remove From Wishlist"
+                    : " Add to Wishlist"}
+                </motion.button>
+              </div>
+            )}
 
             <div className="border-t border-red-800 pt-4">
               <h2 className="text-xl font-semibold text-red-500 mb-2">
@@ -302,6 +344,12 @@ const ProductInfoPage = () => {
           </motion.div>
         </div>
       </div>
+      {selectedProduct && (
+        <ProductModal
+          selectedProduct={selectedProduct}
+          setSelectedProduct={setSelectedProduct}
+        />
+      )}
     </div>
   );
 };
